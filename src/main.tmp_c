@@ -1,0 +1,69 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <avr/io.h>
+#include <avr/wdt.h>
+#include <avr/eeprom.h>
+#include <avr/pgmspace.h>
+#include <avr/interrupt.h>
+
+#include <util/delay.h>
+
+// #include "crc16.h"
+// #include "1wire.h"
+
+#include "usiuartx.h"
+
+// #include "softi2c.h"
+// #include "atsens.h"
+// #include "eeprom.h"
+
+extern uint8_t IDModbus;
+
+
+int main(void)
+{
+
+    cli();
+
+    // fetch own slave address from EEPROM
+    uint8_t IdSv = eeprom_read_byte(&IDModbus);
+
+
+    #ifdef ATSENS_H
+    // internal
+    // vcc+temp
+    getSens( 4 );
+    #endif
+
+    #ifdef _DS18B20_H
+    // 1w pin init
+    DDRB &= ~(DDB4);
+    oneWireInit(BUS);
+
+    // 1wire devices store
+    oneWireDevice devices[MAX_DEVICES];
+    //oneWireSearchBuses(devices, MAX_DEVICES, BUS);
+    #endif
+
+    // init UART
+    usiuartx_init();
+
+    sei();
+
+    /*
+     * receive buffer for modbus frame (fcode = 3,4,6)
+     *  ____________________________________________
+     * |   1x   |   1x   |   2x   |   2x   |   2x   |
+     * |--------+--------+--------+--------+--------|
+     * | S addr | F code | D addr | D nums | CRC16  |
+     * |________|________|________|________|________|
+     *
+     */
+    uint8_t modbus[8];
+
+
+
+}
+
